@@ -1,4 +1,4 @@
-const CACHE_NAME = "fab-control-pwa-1.1.3a";
+const CACHE_NAME = "fab-control-pwa-1.1.3a-r1-responsive";
 const APP_SHELL = [
   "./",
   "./index.html",
