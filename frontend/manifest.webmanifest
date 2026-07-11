@@ -1,0 +1,20 @@
+{
+  "name": "FAB Control Operador",
+  "short_name": "FAB Control",
+  "description": "Execução rápida de checklists e ações operacionais no chão de fábrica.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
