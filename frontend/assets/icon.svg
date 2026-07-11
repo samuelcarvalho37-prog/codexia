@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="FAB Control">
+  <rect width="512" height="512" rx="96" fill="#0b1220"/>
+  <path d="M120 128h272v72H120zm0 112h272v72H120zm0 112h176v72H120z" fill="#22c55e"/>
+  <circle cx="368" cy="388" r="44" fill="#f59e0b"/>
+</svg>
