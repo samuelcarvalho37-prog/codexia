@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const VERSION = "1.1.3a-pwa-prototipo";
+  const VERSION = "1.1.3a-r1-pwa-responsiva";
   const app = document.getElementById("app");
   const keys = {
     apiUrl: "fab-control-api-url",
@@ -86,7 +86,7 @@
       <header class="topbar ${netClass}">
         <div class="topbar-row">
           <div><div class="brand">FAB Control</div><div class="version">${VERSION}</div></div>
-          <div class="version"><span class="status-dot"></span>${state.online ? "Online" : "Offline"}</div>
+          <div class="network-status"><span class="status-dot"></span>${state.online ? "Online" : "Offline"}</div>
         </div>
       </header>
       ${content}
@@ -102,19 +102,21 @@
 
   function renderSetup() {
     app.innerHTML = shell(`
-      <section class="hero">
-        <h1>Configuração de homologação</h1>
-        <p class="muted">A URL e o token ficam somente neste dispositivo. Nenhuma credencial é gravada no repositório.</p>
-      </section>
-      <form id="setup-form" class="card config-grid">
-        <label class="field">URL do Web App Apps Script
-          <input name="apiUrl" type="url" required value="${escapeAttr(state.apiUrl)}" placeholder="https://script.google.com/macros/s/.../exec">
-        </label>
-        <label class="field">Token de OPERADOR
-          <input name="token" type="password" required autocomplete="off" value="${escapeAttr(state.token)}">
-        </label>
-        <button class="primary" type="submit">Entrar no modo operador</button>
-      </form>
+      <main class="screen setup-screen">
+        <section class="hero">
+          <h1>Configuração de homologação</h1>
+          <p class="muted">A URL e o token ficam somente neste dispositivo. Nenhuma credencial é gravada no repositório.</p>
+        </section>
+        <form id="setup-form" class="card config-grid">
+          <label class="field">URL do Web App Apps Script
+            <input name="apiUrl" type="url" required value="${escapeAttr(state.apiUrl)}" placeholder="https://script.google.com/macros/s/.../exec">
+          </label>
+          <label class="field">Token de OPERADOR
+            <input name="token" type="password" required autocomplete="off" value="${escapeAttr(state.token)}">
+          </label>
+          <button class="primary" type="submit">Entrar no modo operador</button>
+        </form>
+      </main>
     `);
     document.getElementById("setup-form").addEventListener("submit", onSetup);
   }
@@ -132,22 +134,28 @@
 
   function renderHome() {
     app.innerHTML = shell(`
-      <section class="hero">
-        <h1>Execução direta</h1>
-        <p class="muted">Carregue a fila real do operador. A prioridade mais alta será exibida primeiro.</p>
-      </section>
-      <section class="metrics">
-        <div class="metric"><strong>${state.action ? 1 : 0}</strong><span class="muted">Em foco</span></div>
-        <div class="metric"><strong>${Object.keys(state.draft).length}</strong><span class="muted">Rascunhos</span></div>
-        <div class="metric"><strong>${state.online ? "OK" : "—"}</strong><span class="muted">Rede</span></div>
-      </section>
-      <section class="card action-card">
-        <h2>Próxima ação</h2>
-        <p class="muted">Toque uma vez para carregar a fila real.</p>
-        <button id="load-actions" class="primary" ${state.loading ? "disabled" : ""}>${state.loading ? "Carregando..." : "Carregar minhas ações"}</button>
-        <button id="open-setup" class="secondary">Configuração</button>
-      </section>
-      ${state.message ? `<section class="card"><strong>${escapeHtml(state.message)}</strong></section>` : ""}
+      <main class="screen home-screen">
+        <section class="hero">
+          <h1>Execução direta</h1>
+          <p class="muted">Carregue a fila real do operador. A prioridade mais alta será exibida primeiro.</p>
+        </section>
+        <section class="metrics" aria-label="Resumo operacional">
+          <div class="metric"><strong>${state.action ? 1 : 0}</strong><span class="muted">Em foco</span></div>
+          <div class="metric"><strong>${Object.keys(state.draft).length}</strong><span class="muted">Rascunhos</span></div>
+          <div class="metric"><strong>${state.online ? "OK" : "—"}</strong><span class="muted">Rede</span></div>
+        </section>
+        <section class="card action-card">
+          <div>
+            <h2>Próxima ação</h2>
+            <p class="muted">Um toque carrega a atividade de maior prioridade.</p>
+          </div>
+          ${state.message ? `<div class="inline-message"><strong>${escapeHtml(state.message)}</strong></div>` : ""}
+          <div class="action-buttons">
+            <button id="load-actions" class="primary" ${state.loading ? "disabled" : ""}>${state.loading ? "Carregando..." : "Carregar minhas ações"}</button>
+            <button id="open-setup" class="secondary">Configuração</button>
+          </div>
+        </section>
+      </main>
     `);
     document.getElementById("load-actions").addEventListener("click", loadActions);
     document.getElementById("open-setup").addEventListener("click", () => { state.screen = "setup"; render(); });
@@ -208,27 +216,29 @@
     const percent = total ? Math.round((responded / total) * 100) : 0;
 
     if (!item) {
-      app.innerHTML = shell(`<section class="empty"><h2>Checklist indisponível</h2><button id="back" class="secondary">Voltar</button></section>`);
+      app.innerHTML = shell(`<main class="screen"><section class="empty"><h2>Checklist indisponível</h2><button id="back" class="secondary">Voltar</button></section></main>`);
       document.getElementById("back").addEventListener("click", goHome);
       return;
     }
 
     app.innerHTML = shell(`
-      <section class="hero">
-        <div class="action-meta"><span class="badge danger">${escapeHtml(labelPriority(action.prioridade || raw.priority?.label))}</span><span class="badge">${escapeHtml(action.status || raw.status?.label || "EM EXECUÇÃO")}</span></div>
-        <h1>${escapeHtml(action.titulo || action.title || "Checklist operacional")}</h1>
-        <p class="muted">${escapeHtml(assetLabel(raw))}</p>
-        <div class="progress" aria-label="${percent}% concluído"><span style="width:${percent}%"></span></div>
-        <p class="muted">${responded}/${total} registrados</p>
-      </section>
-      ${renderItem(item)}
-      <section class="card sync ${state.syncState}">${syncLabel()}</section>
-      <footer class="footer-actions">
-        <div class="footer-actions-inner">
-          <button id="previous" class="secondary" ${state.currentIndex === 0 ? "disabled" : ""}>Anterior</button>
-          <button id="next" class="primary">${state.currentIndex === total - 1 ? "Revisar" : "Próximo"}</button>
-        </div>
-      </footer>
+      <main class="screen action-screen">
+        <section class="hero action-summary">
+          <div class="action-meta"><span class="badge danger">${escapeHtml(labelPriority(action.prioridade || raw.priority?.label))}</span><span class="badge">${escapeHtml(action.status || raw.status?.label || "EM EXECUÇÃO")}</span></div>
+          <h1>${escapeHtml(action.titulo || action.title || "Checklist operacional")}</h1>
+          <p class="muted">${escapeHtml(assetLabel(raw))}</p>
+          <div class="progress" aria-label="${percent}% concluído"><span style="width:${percent}%"></span></div>
+          <p class="muted progress-label">${responded}/${total} registrados</p>
+        </section>
+        ${renderItem(item)}
+        <section class="card sync ${state.syncState}">${syncLabel()}</section>
+        <footer class="footer-actions">
+          <div class="footer-actions-inner">
+            <button id="previous" class="secondary" ${state.currentIndex === 0 ? "disabled" : ""}>Anterior</button>
+            <button id="next" class="primary">${state.currentIndex === total - 1 ? "Revisar" : "Próximo"}</button>
+          </div>
+        </footer>
+      </main>
     `);
 
     bindItem(item);
@@ -254,12 +264,12 @@
       const unit = item.unidade || item.unit || "";
       input = `<label class="field">Valor medido<input id="item-value" type="number" inputmode="decimal" step="any" value="${escapeAttr(value)}" ${min !== "" ? `min="${min}"` : ""} ${max !== "" ? `max="${max}"` : ""}></label><div class="range"><span>Faixa: ${escapeHtml(String(min || "—"))} a ${escapeHtml(String(max || "—"))}</span><strong>${escapeHtml(unit)}</strong></div>`;
     } else if (type === "EVIDENCIA") {
-      input = `<label class="field">Foto obrigatória<input id="item-file" type="file" accept="image/*" capture="environment"></label><p class="muted">A captura fica local neste protótipo. O envio real entra na integração 1.1.3c.</p>`;
+      input = `<label class="field file-field">Foto obrigatória<input id="item-file" type="file" accept="image/*" capture="environment"></label><p class="muted">A captura fica local neste protótipo. O envio real entra na integração 1.1.3c.</p>`;
     } else {
       input = `<label class="field">Registro<textarea id="item-value" rows="4">${escapeHtml(String(value || ""))}</textarea></label>`;
     }
 
-    return `<section class="item-card"><p class="muted">Item ${state.currentIndex + 1} de ${state.items.length}</p><h2>${escapeHtml(title)}</h2><p>${escapeHtml(instruction)}</p>${input}</section>`;
+    return `<section class="item-card"><p class="item-counter">Item ${state.currentIndex + 1} de ${state.items.length}</p><h2>${escapeHtml(title)}</h2><p class="instruction">${escapeHtml(instruction)}</p>${input}</section>`;
   }
 
   function choice(option, value) {
