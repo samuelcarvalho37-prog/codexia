@@ -1,0 +1,17 @@
+# Segredos e credenciais
+.env
+.env.*
+.clasprc.json
+*.key
+*.pem
+
+# Artefatos locais
+node_modules/
+dist/
+coverage/
+.DS_Store
+Thumbs.db
+
+# Backups de produção
+backend-golden/
+backups/
